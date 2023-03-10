@@ -35,7 +35,7 @@ color:
         value: rgb(78, 133, 200)
     success:
       default:
-        value: rgb(79, 130, 47)
+        value: rgb(3, 84, 63)
         check:
           contrast:
             ratio: 4.6
@@ -43,6 +43,8 @@ color:
         value: rgb(147, 224, 84)
       muted:
         value: rgb(83, 150, 10)
+      background:
+        value: rgb(243, 250, 247)
     warning:
       default:
         value: rgb(198, 80, 27)
@@ -52,14 +54,18 @@ color:
       hover:
         value: rgb(253, 169, 75)
       muted:
-        value: rgb(179, 81, 0)
+        value: rgb(166, 116, 79)
+      background:
+        value: rgb(253, 253, 234)
     danger:
       default:
-        value: rgb(224, 0, 0)
+        value: rgb(197, 48, 48)
       hover:
-        value: rgb(233, 100, 100)
+        value: rgb(168, 40, 40)
       muted:
-        value: rgb(181, 0, 0)
+        value: rgb(204, 117, 117)
+      background:
+        value: rgb(255, 245, 245)
     passive:
       default:
         value: rgb(76, 95, 121)
