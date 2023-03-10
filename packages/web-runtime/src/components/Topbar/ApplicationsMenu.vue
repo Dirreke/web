@@ -80,6 +80,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .applications-list {
   padding: 10px;
+  width: 300px;
   li { 
     margin: var(--oc-space-xsmall) 0;
 
