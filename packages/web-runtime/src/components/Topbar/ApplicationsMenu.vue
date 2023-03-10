@@ -79,41 +79,44 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.applications-list li {
-  margin: var(--oc-space-xsmall) 0;
+.applications-list {
+  padding: 10px;
+  li { 
+    margin: var(--oc-space-xsmall) 0;
 
-  a,
-  button {
-    gap: var(--oc-space-medium);
-    justify-content: flex-start;
-    width: 100%;
+    a,
+    button {
+      gap: var(--oc-space-medium);
+      justify-content: flex-start;
+      width: 100%;
 
-    &:focus,
-    &:hover {
-      background-color: var(--oc-color-background-hover);
-      color: var(--oc-color-swatch-passive-default);
-      text-decoration: none;
+      &:focus,
+      &:hover {
+        background-color: var(--oc-color-background-hover);
+        color: var(--oc-color-swatch-passive-default);
+        text-decoration: none;
+      }
+
+      .icon-box {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        width: 40px;
+        height: 40px;
+      }
+
+      .active-check {
+        position: absolute;
+        right: calc(1rem + 5px);
+      }
     }
 
-    .icon-box {
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      width: 40px;
-      height: 40px;
-    }
-
-    .active-check {
-      position: absolute;
-      right: 1rem;
-    }
-  }
-
-  a.router-link-active,
-  button.router-link-active {
-    &:focus,
-    &:hover {
-      color: var(--oc-color-swatch-inverse-default);
+    a.router-link-active,
+    button.router-link-active {
+      &:focus,
+      &:hover {
+        color: var(--oc-color-swatch-inverse-default);
+      }
     }
   }
 }
