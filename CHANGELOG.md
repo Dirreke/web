@@ -37,6 +37,8 @@ Summary
 * Bugfix - PDF display issue - Update CSP object-src policy: [#8498](https://github.com/owncloud/web/pull/8498)
 * Bugfix - Remove fuzzy search results: [#8508](https://github.com/owncloud/web/pull/8508)
 * Bugfix - Space image upload: [#8523](https://github.com/owncloud/web/issues/8523)
+* Bugfix - Users without role assignment: [#8585](https://github.com/owncloud/web/issues/8585)
+* Bugfix - Group members sorting: [#8592](https://github.com/owncloud/web/issues/8592)
 * Change - Streamline new tab handling in extensions: [#6661](https://github.com/owncloud/web/issues/6661)
 * Change - Update Vue to v3.2: [#7948](https://github.com/owncloud/web/issues/7948)
 * Change - Remove permission manager: [#8431](https://github.com/owncloud/web/pull/8431)
@@ -87,13 +89,17 @@ Summary
 * Enhancement - User settings login field: [#8433](https://github.com/owncloud/web/pull/8433)
 * Enhancement - Skeleton App: [#8441](https://github.com/owncloud/web/pull/8441)
 * Enhancement - Configurable top bar: [#8449](https://github.com/owncloud/web/pull/8449)
-* Enhancement - Rework notifications: [#8450](https://github.com/owncloud/web/pull/8450)
+* Enhancement - Rework notification bell: [#8450](https://github.com/owncloud/web/pull/8450)
 * Enhancement - Autosave content changes in text editor: [#8455](https://github.com/owncloud/web/pull/8455)
 * Enhancement - Update CERN links: [#8473](https://github.com/owncloud/web/pull/8473)
 * Enhancement - Respect max quota: [#8489](https://github.com/owncloud/web/pull/8489)
 * Enhancement - User role filter: [#8492](https://github.com/owncloud/web/pull/8492)
 * Enhancement - Beautify file version list: [#8503](https://github.com/owncloud/web/issues/8503)
+* Enhancement - Introduce trashbin overview: [#8515](https://github.com/owncloud/web/pull/8515)
+* Enhancement - Make notifications work with oCIS: [#8518](https://github.com/owncloud/web/pull/8518)
 * Enhancement - Public link permission `PublicLink.Write.all`: [#8541](https://github.com/owncloud/web/pull/8541)
+* Enhancement - Add and remove users from groups batch actions: [#8553](https://github.com/owncloud/web/pull/8553)
+* Enhancement - QuickActions role configurable: [#8566](https://github.com/owncloud/web/pull/8566)
 
 Details
 -------
@@ -275,6 +281,7 @@ Details
    https://github.com/owncloud/web/issues/8411
    https://github.com/owncloud/web/issues/8412
    https://github.com/owncloud/web/pull/8453
+   https://github.com/owncloud/web/pull/8584
 
 * Bugfix - "Show more"-action in shares panel: [#8479](https://github.com/owncloud/web/issues/8479)
 
@@ -312,6 +319,20 @@ Details
 
    https://github.com/owncloud/web/issues/8523
    https://github.com/owncloud/web/pull/8526
+
+* Bugfix - Users without role assignment: [#8585](https://github.com/owncloud/web/issues/8585)
+
+   Listing and editing users without a role assignment in the admin settings has been fixed.
+
+   https://github.com/owncloud/web/issues/8585
+   https://github.com/owncloud/web/pull/8590
+
+* Bugfix - Group members sorting: [#8592](https://github.com/owncloud/web/issues/8592)
+
+   Sorting groups by their member count has been fixed.
+
+   https://github.com/owncloud/web/issues/8592
+   https://github.com/owncloud/web/pull/8600
 
 * Change - Streamline new tab handling in extensions: [#6661](https://github.com/owncloud/web/issues/6661)
 
@@ -353,6 +374,7 @@ Details
    https://github.com/owncloud/web/pull/8288
    https://github.com/owncloud/web/pull/8308
    https://github.com/owncloud/web/pull/8311
+   https://github.com/owncloud/web/pull/8567
 
 * Change - Remove permission manager: [#8431](https://github.com/owncloud/web/pull/8431)
 
@@ -773,6 +795,7 @@ Details
    https://github.com/owncloud/web/pull/8387
    https://github.com/owncloud/web/pull/8430
    https://github.com/owncloud/web/pull/8438
+   https://github.com/owncloud/web/pull/8555
 
 * Enhancement - Use standardized layout for file/space action list: [#8398](https://github.com/owncloud/web/pull/8398)
 
@@ -830,7 +853,7 @@ Details
 
    https://github.com/owncloud/web/pull/8449
 
-* Enhancement - Rework notifications: [#8450](https://github.com/owncloud/web/pull/8450)
+* Enhancement - Rework notification bell: [#8450](https://github.com/owncloud/web/pull/8450)
 
    We're now showing the notification bell based on whether the server supports notifications.
    Previously it was hidden when there were no notifications. We've added a badge that displays
@@ -858,7 +881,9 @@ Details
    server side won't be shown.
 
    https://github.com/owncloud/web/issues/8490
+   https://github.com/owncloud/web/issues/8536
    https://github.com/owncloud/web/pull/8489
+   https://github.com/owncloud/web/pull/8571
 
 * Enhancement - User role filter: [#8492](https://github.com/owncloud/web/pull/8492)
 
@@ -876,6 +901,25 @@ Details
    https://github.com/owncloud/web/issues/8503
    https://github.com/owncloud/web/pull/8504
 
+* Enhancement - Introduce trashbin overview: [#8515](https://github.com/owncloud/web/pull/8515)
+
+   We've added a trashbin overview page, where the user can see their personal trashbins but also
+   the trashbin of the spaces they are a member of.
+
+   https://github.com/owncloud/web/issues/8517
+   https://github.com/owncloud/web/pull/8515
+
+* Enhancement - Make notifications work with oCIS: [#8518](https://github.com/owncloud/web/pull/8518)
+
+   Notifications now work when running oCIS as backend.
+
+   https://github.com/owncloud/web/issues/8519
+   https://github.com/owncloud/web/issues/8520
+   https://github.com/owncloud/web/issues/8593
+   https://github.com/owncloud/web/pull/8518
+   https://github.com/owncloud/web/pull/8582
+   https://github.com/owncloud/web/pull/8595
+
 * Enhancement - Public link permission `PublicLink.Write.all`: [#8541](https://github.com/owncloud/web/pull/8541)
 
    Support for the public link permission `PublicLink.Write.all` has been added. Users without
@@ -884,6 +928,22 @@ Details
 
    https://github.com/owncloud/web/issues/8540
    https://github.com/owncloud/web/pull/8541
+
+* Enhancement - Add and remove users from groups batch actions: [#8553](https://github.com/owncloud/web/pull/8553)
+
+   We've introduced add and remove users from groups batch actions to the admin-settings app.
+
+   https://github.com/owncloud/web/issues/8559
+   https://github.com/owncloud/web/issues/8558
+   https://github.com/owncloud/web/issues/8472
+   https://github.com/owncloud/web/pull/8553
+
+* Enhancement - QuickActions role configurable: [#8566](https://github.com/owncloud/web/pull/8566)
+
+   We've added the option to change the default quickactions role via capabilities.
+
+   https://github.com/owncloud/web/issues/8547
+   https://github.com/owncloud/web/pull/8566
 
 Changelog for ownCloud Web [6.0.0] (2022-11-29)
 =======================================

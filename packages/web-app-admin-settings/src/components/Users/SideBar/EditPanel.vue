@@ -103,7 +103,7 @@ import { computed, defineComponent, PropType, ref, unref } from 'vue'
 import * as EmailValidator from 'email-validator'
 import UserInfoBox from './UserInfoBox.vue'
 import CompareSaveDialog from 'web-pkg/src/components/sideBar/CompareSaveDialog.vue'
-import GroupSelect from './GroupSelect.vue'
+import GroupSelect from '../GroupSelect.vue'
 import QuotaSelect from 'web-pkg/src/components/QuotaSelect.vue'
 import { cloneDeep } from 'lodash-es'
 import { Group, User } from 'web-client/src/generated'
@@ -153,15 +153,13 @@ export default defineComponent({
     })
     const groupOptions = computed(() => {
       const { memberOf: selectedGroups } = unref(editUser)
-      return props.groups
-        .filter((g) => !selectedGroups.some((s) => s.id === g.id))
-        .sort((a, b) => a.displayName.localeCompare(b.displayName))
+      return props.groups.filter((g) => !selectedGroups.some((s) => s.id === g.id))
     })
 
     const isLoginInputDisabled = computed(() => currentUser.uuid === (props.user as User).id)
 
     return {
-      maxQaxQuota: useCapabilitySpacesMaxQuota(),
+      maxQuota: useCapabilitySpacesMaxQuota(),
       isLoginInputDisabled,
       editUser,
       formData,
@@ -207,9 +205,9 @@ export default defineComponent({
       return cloneDeep(this.user)
     },
     selectedRoleName() {
+      const assignedRole = this.editUser.appRoleAssignments[0]
       return this.$gettext(
-        this.roles.find((role) => role.id === this.editUser.appRoleAssignments[0].appRoleId)
-          .displayName
+        this.roles.find((role) => role.id === assignedRole?.appRoleId)?.displayName || ''
       )
     }
   },
@@ -239,7 +237,7 @@ export default defineComponent({
     changeSelectedQuotaOption(option) {
       this.editUser.drive.quota.total = option.value
     },
-    changeSelectedGroupOption(option: Group) {
+    changeSelectedGroupOption(option: Group[]) {
       this.editUser.memberOf = option
     },
     async validateUserName() {
@@ -315,6 +313,10 @@ export default defineComponent({
       })
     },
     onUpdateRole(role) {
+      if (!this.editUser.appRoleAssignments.length) {
+        this.editUser.appRoleAssignments.push({ appRoleId: role.id, displayName: role.displayName })
+        return
+      }
       this.editUser.appRoleAssignments[0].appRoleId = role.id
     },
     onUpdatePassword(password) {

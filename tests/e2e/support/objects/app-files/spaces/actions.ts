@@ -157,7 +157,7 @@ export const changeQuota = async (args: {
   const searchLocator = await page.locator(spacesQuotaSearchField)
   await searchLocator.fill(value)
   await page.waitForSelector(selectedQuotaValueField)
-  await page.locator(util.format(quotaValueDropDown, value)).click()
+  await page.locator(util.format(quotaValueDropDown, `${value} GB`)).click()
 
   await Promise.all([
     page.waitForResponse(
@@ -209,18 +209,6 @@ export const canUserEditSpaceResource = async (
 export const reloadSpacePage = async (page): Promise<void> => {
   await page.reload()
 }
-export interface openSpaceTrashBinArgs {
-  id: string
-  page: Page
-}
-export const openSpaceTrashBin = async (args: openSpaceTrashBinArgs): Promise<void> => {
-  const { id, page } = args
-  await openSpace({ page, id })
-  await page.locator(spaceContextButton).click()
-  await page.locator(spaceDeletedFilesButton).click()
-}
-
-/**/
 
 export const changeSpaceImage = async (args: {
   id: string

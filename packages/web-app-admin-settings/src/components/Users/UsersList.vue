@@ -149,23 +149,31 @@ export default defineComponent({
     }
 
     const showDetails = (user) => {
-      selectUser(user)
+      if (!isUserSelected(user)) {
+        selectUser(user)
+      }
       eventBus.publish(SideBarEventTopics.open)
     }
 
     const showEditPanel = (user) => {
-      selectUser(user)
+      if (!isUserSelected(user)) {
+        selectUser(user)
+      }
       eventBus.publish(SideBarEventTopics.openWithPanel, 'EditPanel')
     }
 
     const showGroupAssigmentPanel = (user) => {
-      selectUser(user)
+      if (!isUserSelected(user)) {
+        selectUser(user)
+      }
       eventBus.publish(SideBarEventTopics.openWithPanel, 'GroupAssignmentsPanel')
     }
 
     const rowClicked = (data) => {
       const user = data[0]
-      selectUser(user)
+      if (!isUserSelected(user)) {
+        selectUser(user)
+      }
     }
     const showContextMenuOnBtnClick = (data, user) => {
       const { dropdown, event } = data
@@ -338,8 +346,10 @@ export default defineComponent({
     getRoleDisplayNameByUser(user) {
       const assignedRole = user.appRoleAssignments[0]
 
-      return this.$gettext(
-        this.roles.find((role) => role.id === assignedRole.appRoleId)?.displayName || ''
+      return (
+        this.$gettext(
+          this.roles.find((role) => role.id === assignedRole?.appRoleId)?.displayName || ''
+        ) || '-'
       )
     }
   }
