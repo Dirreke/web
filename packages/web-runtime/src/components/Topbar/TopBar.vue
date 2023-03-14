@@ -14,6 +14,16 @@
       <portal-target name="app.runtime.header.right" multiple />
     </div>
     <portal to="app.runtime.header.right" :order="50">
+        <oc-expanding-dropdown>
+        <template #toggle>
+          <oc-icon name="grid" size="large" class="oc-flex" />
+        </template>
+        <template #body>
+          <oc-list class="applications-list">
+            <div style="width: 200px; height: 150px">123</div>
+          </oc-list>
+        </template>
+      </oc-expanding-dropdown>
       <theme-switcher v-if="darkThemeAvailable" />
       <feedback-link v-if="isFeedbackLinkEnabled" v-bind="feedbackLinkOptions" />
     </portal>
@@ -35,6 +45,7 @@ import FeedbackLink from './FeedbackLink.vue'
 import ThemeSwitcher from './ThemeSwitcher.vue'
 import { useCapabilityNotifications, useStore, useUserContext } from 'web-pkg/src'
 import { computed, unref } from 'vue'
+import OcExpandingDropdown from '../../../../design-system/src/components/OcExpandingDropdown/OcExpandingDropdown.vue'
 
 export default {
   components: {
@@ -42,7 +53,8 @@ export default {
     FeedbackLink,
     Notifications,
     ThemeSwitcher,
-    UserMenu
+    UserMenu,
+    OcExpandingDropdown
   },
   mixins: [NavigationMixin],
   props: {
