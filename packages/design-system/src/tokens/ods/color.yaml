@@ -44,19 +44,19 @@ color:
       muted:
         value: rgb(83, 150, 10)
       background:
-        value: rgb(243, 250, 247)
+        value: rgb(230,255,250)
     warning:
       default:
-        value: rgb(198, 80, 27)
+        value: rgb(192,86,33)
         check:
           contrast:
             ratio: 4.6
       hover:
-        value: rgb(253, 169, 75)
+        value: rgb(192,86,33)
       muted:
-        value: rgb(166, 116, 79)
+        value: rgba(192,86,33, .5)
       background:
-        value: rgb(253, 253, 234)
+        value: rgb(255,250,240)
     danger:
       default:
         value: rgb(197, 48, 48)

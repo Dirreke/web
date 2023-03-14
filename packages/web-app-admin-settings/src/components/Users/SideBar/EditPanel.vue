@@ -69,6 +69,7 @@
           <div class="oc-text-input-message"></div>
         </div>
         <quota-select
+          id="quota-select-form"
           :key="'quota-select-' + user.id"
           :disabled="isQuotaInputDisabled"
           class="oc-mb-s"
