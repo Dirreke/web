@@ -50,7 +50,6 @@ export default {
     $_emptyTrashBin_trigger() {
       const modal = {
         variation: 'danger',
-        icon: 'alarm-warning',
         title: this.$gettext('Empty trash bin'),
         cancelText: this.$gettext('Cancel'),
         confirmText: this.$gettext('Delete'),

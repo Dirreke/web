@@ -31,7 +31,6 @@ export default {
 
       const modal = {
         variation: 'danger',
-        icon: 'alarm-warning',
         title: this.$ngettext(
           'Delete user %{user}?',
           'Delete %{userCount} selected users?',

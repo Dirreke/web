@@ -64,7 +64,7 @@ export default {
         title: this.$ngettext('Enable Space?', 'Enable Spaces?', allowedResources.length),
         cancelText: this.$gettext('Cancel'),
         confirmText,
-        icon: 'alarm-warning',
+        icon: 'alert',
         message,
         hasInput: false,
         onCancel: this.hideModal,

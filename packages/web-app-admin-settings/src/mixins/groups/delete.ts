@@ -31,7 +31,6 @@ export default {
 
       const modal = {
         variation: 'danger',
-        icon: 'alarm-warning',
         title: this.$ngettext(
           'Delete group %{group}?',
           'Delete %{groupCount} selected groups?',

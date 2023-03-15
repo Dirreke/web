@@ -60,7 +60,6 @@ export default {
           : this.$gettext('Disable (%{count})', { count: allowedResources.length })
       const modal = {
         variation: 'danger',
-        icon: 'alarm-warning',
         title: this.$ngettext('Disable Space?', 'Disable Spaces?', allowedResources.length),
         cancelText: this.$gettext('Cancel'),
         confirmText,

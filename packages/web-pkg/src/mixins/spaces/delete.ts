@@ -61,7 +61,6 @@ export default {
           : this.$gettext('Delete (%{count})', { count: allowedResources.length })
       const modal = {
         variation: 'danger',
-        icon: 'alarm-warning',
         title: this.$ngettext('Delete Space?', 'Delete Spaces?', allowedResources.length),
         cancelText: this.$gettext('Cancel'),
         confirmText,
