@@ -42,7 +42,7 @@ export default {
     FeedbackLink,
     Notifications,
     ThemeSwitcher,
-    UserMenu,
+    UserMenu
   },
   mixins: [NavigationMixin],
   props: {
