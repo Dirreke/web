@@ -4,7 +4,12 @@
     :aria-label="$gettext('Main navigation')"
     class="oc-flex oc-flex-middle"
   >
-    <oc-expanding-dropdown :expand-head="true" :close-on-click="true">
+    <oc-expanding-dropdown
+      :expand-head="true"
+      :close-on-click="true"
+      @dropdown-open="closeSidebar"
+      @dropdown-close="reopenSidebar"
+    >
       <template #toggle>
         <oc-icon name="grid" size="large" class="oc-flex" />
       </template>
@@ -43,7 +48,7 @@
 import { defineComponent } from 'vue'
 import { clientService } from 'web-pkg/src/services'
 import { configurationManager } from 'web-pkg/src/configuration'
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters, mapState } from 'vuex'
 import { urlJoin } from 'web-client/src/utils'
 import OcExpandingDropdown from '../../../../design-system/src/components/OcExpandingDropdown/OcExpandingDropdown.vue'
 
@@ -58,7 +63,13 @@ export default defineComponent({
       default: () => []
     }
   },
+  data: () => {
+    return {
+      sidebarClosedBefore: false
+    }
+  },
   computed: {
+    ...mapState(['navigation']),
     ...mapGetters(['configuration', 'user']),
     ...mapGetters('runtime/auth', ['accessToken']),
 
@@ -81,6 +92,14 @@ export default defineComponent({
     })
   },
   methods: {
+    ...mapActions(['openNavigation', 'closeNavigation']),
+
+    closeSidebar() {
+      this.closeNavigation()
+    },
+    reopenSidebar() {
+      this.openNavigation()
+    },
     async clickApp(appEntry) {
       // @TODO use id or similar
       if (appEntry.url?.endsWith('/apps/files')) {
