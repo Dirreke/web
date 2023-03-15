@@ -43,8 +43,6 @@ color:
         value: rgb(147, 224, 84)
       muted:
         value: rgb(83, 150, 10)
-      background:
-        value: rgb(230,255,250)
     warning:
       default:
         value: rgb(183, 76, 27)
@@ -55,8 +53,6 @@ color:
         value: rgb(183, 76, 27)
       muted:
         value: rgba(183, 76, 27, .5)
-      background:
-        value: rgb(255,250,240)
     danger:
       default:
         value: rgb(197, 48, 48)
@@ -64,8 +60,6 @@ color:
         value: rgb(168, 40, 40)
       muted:
         value: rgb(204, 117, 117)
-      background:
-        value: rgb(255, 245, 245)
     passive:
       default:
         value: rgb(76, 95, 121)
