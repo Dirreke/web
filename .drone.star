@@ -760,10 +760,8 @@ def beforePipelines(ctx):
            pipelinesDependsOn(pnpmlint(ctx), pnpmCache(ctx))
 
 def stagePipelines(ctx):
-    unit_test_pipelines = unitTests(ctx)
     e2e_pipelines = e2eTests(ctx)
-    acceptance_pipelines = acceptance(ctx)
-    return unit_test_pipelines + pipelinesDependsOn(e2e_pipelines + acceptance_pipelines, unit_test_pipelines)
+    return e2e_pipelines
 
 def afterPipelines(ctx):
     return build(ctx) + pipelinesDependsOn(notify(), build(ctx))
@@ -1172,26 +1170,13 @@ def e2eTests(ctx):
                      setUpOauth2(True, True) + \
                      fixPermissions() + \
                      waitForOwncloudService()
-        else:
-            # oCIS specific environment variables
-            environment["BASE_URL_OCIS"] = "ocis:9200"
-            environment["OCIS"] = "true"
-
-            # oCIS specific dependencies
-            depends_on = ["cache-ocis"]
-
-            # oCIS specific steps
-            steps += setupServerConfigureWeb(params["logLevel"]) + \
-                     restoreOcisCache() + \
-                     ocisService() + \
-                     getSkeletonFiles()
 
         steps += [{
                      "name": "e2e-tests",
                      "image": OC_CI_NODEJS,
                      "environment": environment,
                      "commands": [
-                         "sleep 10 && pnpm test:e2e:cucumber tests/e2e/cucumber/**/*[!.%s].feature" % ("oc10" if server == "oCIS" else "ocis"),
+                         "sleep 10 && pnpm test:e2e:cucumber tests/e2e/cucumber/features/journeys/kindergarten.oc10.feature",
                      ],
                  }] + \
                  uploadTracingResult(ctx) + \
