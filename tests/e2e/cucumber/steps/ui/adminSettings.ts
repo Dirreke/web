@@ -432,3 +432,39 @@ Then(
     }
   }
 )
+
+When(
+    '{string} lists the members of project space {string} using a sidebar panel',
+    async function (this:World, stepUser: string, key: string): Promise<void> {
+      const { page } = this.actorsEnvironment.getActor({ key: stepUser })
+      const spacesObject = new objects.applicationAdminSettings.Spaces({ page })
+      await spacesObject.openPanel({key})
+      await spacesObject.openActionSideBarPanel({action:'SpaceMembers'})
+
+    }
+)
+
+
+Then(
+    '{string} should see the following users in the webUI',
+    async function (this:World, stepUser: string,stepTable: DataTable): Promise<void>{
+      const { page } = this.actorsEnvironment.getActor({ key: stepUser })
+      const spacesObject = new objects.applicationAdminSettings.Spaces({ page })
+      let expected = null
+      for(const info of stepTable.hashes()){
+        switch (info.role){
+          case 'manager':
+            expected = await spacesObject.listMembers({filter:'managers'})
+            break
+          case 'editor':
+            expected = await spacesObject.listMembers({filter:'editor'})
+            break
+          case 'viewer':
+            expected = await spacesObject.listMembers({filter:'viewer'})
+            break
+          default:
+            throw new Error(`'${info.role}' role not implemented`)
+        }
+      }
+    }
+)
