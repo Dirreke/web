@@ -11,7 +11,7 @@
     <template #content>
       <form autocomplete="off" @submit.prevent="onFormSubmit">
         <oc-text-input
-          id="create-user-input-display-name"
+          id="create-user-input-user-name"
           v-model="user.onPremisesSamAccountName"
           class="oc-mb-s"
           :label="$gettext('User name') + '*'"
@@ -20,6 +20,7 @@
           @update:model-value="validateUserName"
         />
         <oc-text-input
+          id="create-user-input-display-name"
           v-model="user.displayName"
           class="oc-mb-s"
           :label="$gettext('First and last name') + '*'"
@@ -28,6 +29,7 @@
           @update:model-value="validateDisplayName"
         />
         <oc-text-input
+          id="create-user-input-email"
           v-model="user.mail"
           class="oc-mb-s"
           :label="$gettext('Email') + '*'"
@@ -38,6 +40,7 @@
           @change="validateEmail"
         />
         <oc-text-input
+          id="create-user-input-password"
           v-model="user.passwordProfile.password"
           class="oc-mb-s"
           :label="$gettext('Password') + '*'"
@@ -53,38 +56,40 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, ref } from 'vue'
 import * as EmailValidator from 'email-validator'
-import { useGraphClient } from 'web-pkg'
+import { useClientService } from 'web-pkg'
 
 export default defineComponent({
   name: 'CreateUserModal',
   emits: ['cancel', 'confirm'],
   setup() {
+    const clientService = useClientService()
+    const formData = ref({
+      userName: {
+        errorMessage: '',
+        valid: false
+      },
+      displayName: {
+        errorMessage: '',
+        valid: false
+      },
+      email: {
+        errorMessage: '',
+        valid: false
+      },
+      password: {
+        errorMessage: '',
+        valid: false
+      }
+    })
     return {
-      ...useGraphClient()
+      clientService,
+      formData
     }
   },
   data: function () {
     return {
-      formData: {
-        userName: {
-          errorMessage: '',
-          valid: false
-        },
-        displayName: {
-          errorMessage: '',
-          valid: false
-        },
-        email: {
-          errorMessage: '',
-          valid: false
-        },
-        password: {
-          errorMessage: '',
-          valid: false
-        }
-      },
       user: {
         onPremisesSamAccountName: '',
         displayName: '',
@@ -133,16 +138,14 @@ export default defineComponent({
       }
 
       try {
-        await this.graphClient.users.getUser(this.user.onPremisesSamAccountName)
+        // Validate username by fetching the user. If the request succeeds, we throw a validation error
+        const client = this.clientService.graphAuthenticated
+        await client.users.getUser(this.user.onPremisesSamAccountName)
         this.formData.userName.errorMessage = this.$gettext('User "%{userName}" already exists', {
           userName: this.user.onPremisesSamAccountName
         })
         return false
-      } catch (e) {
-        /**
-         * If the backend throws an error, the user doesn't exist and everything is alright
-         */
-      }
+      } catch (e) {}
 
       this.formData.userName.errorMessage = ''
       this.formData.userName.valid = true

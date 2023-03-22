@@ -1,20 +1,20 @@
 Feature: spaces participant management
 
   Scenario: participant management
-    Given "Admin" creates following users
+    Given "Admin" creates following users using API
       | id      |
       | Alice   |
       | Brian   |
       | Carol   |
       | Marie   |
       | Richard |
-    And "Admin" creates following group
+    And "Admin" creates following group using API
       | id       |
       | sales    |
       | security |
-    And "Admin" adds user to the group
-      | user    | group |
-      | Marie   | sales |
+    And "Admin" adds user to the group using API
+      | user    | group    |
+      | Marie   | sales    |
       | Richard | security |
     And "Admin" assigns following roles to the users using API
       | id    | role        |
@@ -51,9 +51,9 @@ Feature: spaces participant management
     And "Richard" navigates to the project space "team.1"
     And "Richard" creates the following resources
       | resource | type   |
-      | richard   | folder |
+      | richard  | folder |
     And "Richard" uploads the following resources
-      | resource  | to     |
+      | resource  | to      |
       | lorem.txt | richard |
     And "Richard" logs out
     When "Carol" logs in

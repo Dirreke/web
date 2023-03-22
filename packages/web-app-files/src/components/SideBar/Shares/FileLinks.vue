@@ -125,7 +125,6 @@ import { LinkShareRoles, SharePermissions } from 'web-client/src/helpers/share'
 import { showQuickLinkPasswordModal } from '../../../quickActions'
 import DetailsAndEdit from './Links/DetailsAndEdit.vue'
 import NameAndCopy from './Links/NameAndCopy.vue'
-import { useGraphClient } from 'web-pkg/src/composables'
 import CreateQuickLink from './Links/CreateQuickLink.vue'
 import { getLocaleFromLanguage } from 'web-pkg/src/helpers'
 import { Resource } from 'web-client/src/helpers'
@@ -165,7 +164,6 @@ export default defineComponent({
     const canCreatePublicLinks = computed(() => can('create-all', 'PublicLink'))
 
     return {
-      ...useGraphClient(),
       space: inject<Resource>('space'),
       resource: inject<Resource>('resource'),
       incomingParentShare: inject<Resource>('incomingParentShare'),
@@ -348,19 +346,16 @@ export default defineComponent({
       const canCreate = currentRole.hasPermission(SharePermissions.create)
       const canDelete = currentRole.hasPermission(SharePermissions.delete)
 
-      if (this.passwordEnforced.read_only === true) {
-        return canRead && !canUpdate && !canCreate && !canDelete
-      }
-      if (this.passwordEnforced.upload_only === true) {
-        return !canRead && !canUpdate && canCreate && !canDelete
-      }
-      if (this.passwordEnforced.read_write === true) {
-        return canRead && !canUpdate && canCreate && !canDelete
-      }
-      if (this.passwordEnforced.read_write_delete === true) {
-        return canRead && canUpdate && canCreate && canDelete
-      }
-      return false
+      const isReadOnly = canRead && !canUpdate && !canCreate && !canDelete
+      const isUploadOnly = !canRead && !canUpdate && canCreate && !canDelete
+      const isReadWrite = canRead && !canUpdate && canCreate && !canDelete
+      const isReadWriteDelete = canRead && canUpdate && canCreate && canDelete
+      return (
+        (this.passwordEnforced.read_only === true && isReadOnly) ||
+        (this.passwordEnforced.upload_only === true && isUploadOnly) ||
+        (this.passwordEnforced.read_write === true && isReadWrite) ||
+        (this.passwordEnforced.read_write_delete === true && isReadWriteDelete)
+      )
     },
 
     addNewLink() {

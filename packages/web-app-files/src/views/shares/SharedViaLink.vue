@@ -27,15 +27,14 @@
           :header-position="fileListHeaderY"
           :sort-by="sortBy"
           :sort-dir="sortDir"
-          @file-click="$_fileActions_triggerDefaultAction"
+          @file-click="triggerDefaultAction"
           @row-mounted="rowMounted"
           @sort="handleSort"
         >
           <template #contextMenu="{ resource }">
             <context-actions
               v-if="isResourceInSelection(resource)"
-              :items="selectedResources"
-              :space="getSpace(resource)"
+              :action-options="{ space: getSpace(resource), resources: selectedResources }"
             />
           </template>
           <template #footer>
@@ -63,7 +62,7 @@
 <script lang="ts">
 import { mapGetters, mapState, mapActions } from 'vuex'
 
-import FileActions from '../../mixins/fileActions'
+import { useFileActions } from '../../composables/actions/files/useFileActions'
 import { VisibilityObserver } from 'web-pkg/src/observer'
 import { ImageDimension, ImageType } from 'web-pkg/src/constants'
 import { debounce } from 'lodash-es'
@@ -100,8 +99,6 @@ export default defineComponent({
     SideBar
   },
 
-  mixins: [FileActions],
-
   setup() {
     const store = useStore()
     const getSpace = (resource: Resource): SpaceResource => {
@@ -120,6 +117,7 @@ export default defineComponent({
     }
 
     return {
+      ...useFileActions(),
       ...useResourcesViewDefaults<Resource, any, any[]>(),
       getSpace,
       hasProjectSpaces: useCapabilityProjectSpacesEnabled()
@@ -164,6 +162,7 @@ export default defineComponent({
       const debounced = debounce(({ unobserve }) => {
         unobserve()
         this.loadPreview({
+          clientService: this.$clientService,
           resource,
           isPublic: false,
           dimensions: ImageDimension.Thumbnail,

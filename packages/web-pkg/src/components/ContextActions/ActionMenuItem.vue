@@ -1,7 +1,7 @@
 <template>
   <li>
     <oc-button
-      v-oc-tooltip="showTooltip || action.hideLabel ? action.label(filterParams) : ''"
+      v-oc-tooltip="showTooltip || action.hideLabel ? action.label(actionOptions) : ''"
       :type="action.componentType"
       v-bind="componentProps"
       :class="[action.class, 'action-menu-item', 'oc-py-s', 'oc-px-m', 'oc-width-1-1']"
@@ -35,7 +35,7 @@
         v-if="!action.hideLabel"
         class="oc-files-context-action-label"
         data-testid="action-label"
-        >{{ action.label(filterParams) }}</span
+        >{{ action.label(actionOptions) }}</span
       >
       <span
         v-if="action.shortcut && shortcutHint"
@@ -53,24 +53,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue'
-import { SpaceResource } from 'web-client/src/helpers'
+import { computed, defineComponent, PropType } from 'vue'
+import { Action, ActionOptions } from 'web-pkg/src/composables/actions'
 
 export default defineComponent({
   name: 'ActionMenuItem',
   props: {
     action: {
-      type: Object,
+      type: Object as PropType<Action>,
       required: true
     },
-    items: {
-      type: Array,
+    actionOptions: {
+      type: Object as PropType<ActionOptions>,
       required: true
-    },
-    space: {
-      type: Object as PropType<SpaceResource>,
-      required: false,
-      default: null
     },
     appearance: {
       type: String,
@@ -87,31 +82,33 @@ export default defineComponent({
       required: false
     }
   },
-  computed: {
-    filterParams() {
-      return {
-        space: this.space,
-        resources: this.items
-      }
-    },
-    hasExternalImageIcon() {
-      return this.action.icon && /^https?:\/\//i.test(this.action.icon)
-    },
-    componentProps() {
-      const props = {
-        appearance: this.appearance,
-        ...(this.action.isDisabled && { disabled: this.action.isDisabled() }),
-        ...(this.action.variation && { variation: this.action.variation })
+  setup(props) {
+    const componentProps = computed(() => {
+      const properties = {
+        appearance: props.appearance,
+        ...(props.action.isDisabled && {
+          disabled: props.action.isDisabled(props.actionOptions)
+        }),
+        ...(props.action.variation && { variation: props.action.variation })
       }
 
-      if (this.action.componentType === 'router-link' && this.action.route) {
+      if (props.action.componentType === 'router-link' && props.action.route) {
         return {
-          ...props,
-          to: this.action.route(this.filterParams)
+          ...properties,
+          to: props.action.route(props.actionOptions)
         }
       }
 
-      return props
+      return properties
+    })
+
+    return {
+      componentProps
+    }
+  },
+  computed: {
+    hasExternalImageIcon() {
+      return this.action.icon && /^https?:\/\//i.test(this.action.icon)
     },
     componentListeners() {
       if (typeof this.action.handler !== 'function' || this.action.componentType !== 'button') {
@@ -120,7 +117,7 @@ export default defineComponent({
 
       const callback = () =>
         this.action.handler({
-          ...this.filterParams,
+          ...this.actionOptions,
           ...this.action.handlerData
         })
       if (this.action.keepOpen) {

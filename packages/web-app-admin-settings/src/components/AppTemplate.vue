@@ -29,8 +29,8 @@
             <batch-actions
               v-if="showBatchActions"
               class="oc-ml-s"
-              :items="batchActionItems"
               :actions="batchActions"
+              :action-options="{ resources: batchActionItems }"
               :limited-screen-space="limitedScreenSpace"
             />
           </div>
@@ -62,6 +62,8 @@ import BatchActions from 'web-pkg/src/components/BatchActions.vue'
 import { defineComponent, onBeforeUnmount, onMounted, PropType, ref, unref } from 'vue'
 import { eventBus, useAppDefaults } from 'web-pkg'
 import { SideBarEventTopics } from 'web-pkg/src/composables/sideBar'
+import { Panel } from 'web-pkg/src/components/sideBar'
+import { BreadcrumbItem } from 'design-system/src/components/OcBreadcrumb/types'
 
 export default defineComponent({
   components: {
@@ -72,7 +74,7 @@ export default defineComponent({
   props: {
     breadcrumbs: {
       required: true,
-      type: Array
+      type: Array as PropType<BreadcrumbItem[]>
     },
     sideBarOpen: {
       required: false,
@@ -81,7 +83,7 @@ export default defineComponent({
     },
     sideBarAvailablePanels: {
       required: false,
-      type: Array,
+      type: Array as PropType<Panel[]>,
       default: () => []
     },
     sideBarActivePanel: {

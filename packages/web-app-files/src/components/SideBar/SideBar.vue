@@ -54,7 +54,6 @@ import {
 import {
   useCapabilityShareJailEnabled,
   useClientService,
-  useGraphClient,
   useStore,
   useRouter
 } from 'web-pkg/src/composables'
@@ -83,7 +82,7 @@ export default defineComponent({
     const router = useRouter()
     const { $gettext } = useGettext()
     const { owncloudSdk } = useClientService()
-    const { graphClient } = useGraphClient()
+    const clientService = useClientService()
     const { webdav } = useClientService()
 
     const loadedResource = ref()
@@ -181,6 +180,9 @@ export default defineComponent({
         unref(isSharedViaLinkLocation)
       )
     })
+    const isFlatFileList = computed(() => {
+      return unref(isShareLocation) || unref(isSearchLocation) || unref(isFavoritesLocation)
+    })
 
     const availablePanels = computed((): Panel[] => {
       const { panels } = store.getters.fileSideBars.reduce(
@@ -244,13 +246,7 @@ export default defineComponent({
         path: unref(highlightedFile).path,
         storageId: unref(highlightedFile).fileId,
         // cache must not be used on flat file lists that gather resources form various locations
-        useCached: !(
-          unref(isSharedWithMeLocation) ||
-          unref(isSharedWithOthersLocation) ||
-          unref(isSharedViaLinkLocation) ||
-          unref(isSearchLocation) ||
-          unref(isFavoritesLocation)
-        )
+        useCached: !unref(isFlatFileList)
       })
     }
 
@@ -277,7 +273,7 @@ export default defineComponent({
 
           if (unref(highlightedFileIsSpace)) {
             store.dispatch('runtime/spaces/loadSpaceMembers', {
-              graphClient: unref(graphClient),
+              graphClient: clientService.graphAuthenticated,
               space: unref(highlightedSpace)
             })
           }
@@ -287,7 +283,7 @@ export default defineComponent({
           return
         }
 
-        const currentFolderRequired = !unref(isShareLocation) && !unref(isProjectsLocation)
+        const currentFolderRequired = !unref(isFlatFileList) && !unref(isProjectsLocation)
         if (!currentFolderRequired || unref(currentFolder)) {
           store.commit('Files/PRUNE_SHARES')
           loadedResource.value = null

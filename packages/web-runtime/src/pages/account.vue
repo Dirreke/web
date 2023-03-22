@@ -89,12 +89,14 @@ import { computed, defineComponent, onMounted, unref } from 'vue'
 import {
   useAccessToken,
   useCapabilitySpacesEnabled,
-  useGraphClient,
+  useClientService,
   useStore
 } from 'web-pkg/src/composables'
 import { useTask } from 'vue-concurrency'
 import axios from 'axios'
 import { v4 as uuidV4 } from 'uuid'
+import { useGettext } from 'vue3-gettext'
+import { setCurrentLanguage } from 'web-runtime/src/helpers/language'
 
 export default defineComponent({
   name: 'Personal',
@@ -104,6 +106,8 @@ export default defineComponent({
   setup() {
     const store = useStore()
     const accessToken = useAccessToken({ store })
+    const language = useGettext()
+    const clientService = useClientService()
 
     // FIXME: Use graph capability when we have it
     const isLanguageSupported = useCapabilitySpacesEnabled()
@@ -179,10 +183,9 @@ export default defineComponent({
         }
       )
 
-      store.commit('SET_SETTINGS_VALUE', {
-        identifier: accountSettingIdentifier,
-        value
-      })
+      const newSetting = { identifier: accountSettingIdentifier, value }
+      store.commit('SET_SETTINGS_VALUE', newSetting)
+      setCurrentLanguage({ language, languageSetting: newSetting })
     }
     const accountEditLink = computed(() => {
       return store.getters.configuration?.options?.accountEditLink
@@ -205,7 +208,7 @@ export default defineComponent({
     })
 
     return {
-      ...useGraphClient(),
+      clientService,
       languageOptions,
       selectedLanguageOption,
       updateSelectedLanguage,
@@ -235,7 +238,7 @@ export default defineComponent({
       this.editPasswordModalOpen = false
     },
     editPassword(currentPassword, newPassword) {
-      return this.graphClient.users
+      return this.clientService.graphAuthenticated.users
         .changeOwnPassword(currentPassword.trim(), newPassword.trim())
         .then(() => {
           this.closeEditPasswordModal()

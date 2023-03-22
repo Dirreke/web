@@ -20,7 +20,8 @@ import {
   announceUppyService,
   announceAuthService,
   startSentry,
-  announceCustomScripts
+  announceCustomScripts,
+  announceLoadingService
 } from './container/bootstrap'
 import { applicationStore } from './container/store'
 import {
@@ -35,10 +36,8 @@ import { DavProperty } from 'web-client/src/webdav/constants'
 import { createApp } from 'vue'
 import PortalVue, { createWormhole } from 'portal-vue'
 
-import WebPlugin from './plugins/web'
 import Avatar from './components/Avatar.vue'
 import focusMixin from './mixins/focusMixin'
-import lifecycleMixin from './mixins/lifecycleMixin'
 
 export const bootstrapApp = async (configurationPath: string): Promise<void> => {
   const app = createApp(pages.success)
@@ -62,10 +61,11 @@ export const bootstrapApp = async (configurationPath: string): Promise<void> => 
   await Promise.all([applicationsPromise, themePromise])
 
   announceTranslations({ app, availableLanguages: supportedLanguages, translations })
-  announceClientService({ app, runtimeConfiguration })
+  announceClientService({ app, runtimeConfiguration, configurationManager, store })
   announceUppyService({ app })
+  announceLoadingService({ app })
   await announceClient(runtimeConfiguration)
-  await announceAuthService({ app, configurationManager, store, router })
+  announceAuthService({ app, configurationManager, store, router })
   announceCustomStyles({ runtimeConfiguration })
   announceCustomScripts({ runtimeConfiguration })
   announceDefaults({ store, router })
@@ -78,10 +78,8 @@ export const bootstrapApp = async (configurationPath: string): Promise<void> => 
     wormhole: app.config.globalProperties.$wormhole
   })
 
-  app.use(WebPlugin)
   app.component('AvatarImage', Avatar)
   app.mixin(focusMixin)
-  app.mixin(lifecycleMixin)
 
   app.mount('#owncloud')
 
@@ -116,10 +114,7 @@ export const bootstrapApp = async (configurationPath: string): Promise<void> => 
 
       // Load spaces to make them available across the application
       if (store.getters.capabilities?.spaces?.enabled) {
-        const graphClient = clientService.graphAuthenticated(
-          store.getters.configuration.server,
-          store.getters['runtime/auth/accessToken']
-        )
+        const graphClient = clientService.graphAuthenticated
         await store.dispatch('runtime/spaces/loadSpaces', { graphClient })
         const personalSpace = store.getters['runtime/spaces/spaces'].find((space) =>
           isPersonalSpaceResource(space)

@@ -8,7 +8,7 @@ Feature: Search
     And "Admin" disables share auto accepting
 
   Scenario: Search in personal spaces
-    Given "Admin" creates following users
+    Given "Admin" creates following users using API
       | id    |
       | Alice |
       | Brian |
@@ -87,8 +87,8 @@ Feature: Search
       | new_share_from_brian |
       | new-lorem-big.txt    |
     But following resources should not be displayed in the search list for user "Alice"
-      | resource          |
-      | folder            |
-      | FolDer            |
-      | .hidden-file.txt  |
+      | resource         |
+      | folder           |
+      | FolDer           |
+      | .hidden-file.txt |
     And "Alice" logs out

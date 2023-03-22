@@ -57,7 +57,7 @@
               </oc-button>
             </template>
             <template #contextMenuActions="{ resource }">
-              <space-context-actions :space="resource" :items="[resource]" />
+              <space-context-actions :action-options="{ resources: [resource] }" />
             </template>
           </resource-tiles>
         </div>
@@ -77,7 +77,7 @@ import AppLoadingSpinner from 'web-pkg/src/components/AppLoadingSpinner.vue'
 
 import AppBar from '../../components/AppBar/AppBar.vue'
 import CreateSpace from '../../components/AppBar/CreateSpace.vue'
-import { useAbility, useAccessToken, useStore, useGraphClient } from 'web-pkg/src/composables'
+import { useAbility, useAccessToken, useClientService, useStore } from 'web-pkg/src/composables'
 import { loadPreview } from 'web-pkg/src/helpers/preview'
 import { ImageDimension } from 'web-pkg/src/constants'
 import SpaceContextActions from '../../components/Spaces/SpaceContextActions.vue'
@@ -106,6 +106,7 @@ export default defineComponent({
   },
   setup() {
     const store = useStore()
+    const clientService = useClientService()
     const { selectedResourcesIds } = useSelectedResources({ store })
     const { can } = useAbility()
 
@@ -119,13 +120,12 @@ export default defineComponent({
       sortDir,
       items: spaces,
       handleSort
-    } = useSort({
+    } = useSort<SpaceResource>({
       items: runtimeSpaces,
       fields: sortFields
     })
 
     const accessToken = useAccessToken({ store })
-    const { graphClient } = useGraphClient()
 
     const { scrollToResourceFromRoute } = useScrollTo()
 
@@ -133,7 +133,7 @@ export default defineComponent({
       store.commit('Files/CLEAR_FILES_SEARCHED')
       store.commit('Files/CLEAR_CURRENT_FILES_LIST')
       yield store.dispatch('runtime/spaces/reloadProjectSpaces', {
-        graphClient: unref(graphClient)
+        graphClient: clientService.graphAuthenticated
       })
       store.commit('Files/LOAD_FILES', { currentFolder: null, files: unref(spaces) })
     })
@@ -153,7 +153,7 @@ export default defineComponent({
     return {
       ...useSideBar(),
       spaces,
-      graphClient,
+      clientService,
       loadResourcesTask,
       areResourcesLoading,
       accessToken,
@@ -212,8 +212,9 @@ export default defineComponent({
             .slice(webDavPathComponents.indexOf(idComponent) + 1)
             .join('/')
 
-          const resource = await (this.$clientService.webdav as WebDAV).getFileInfo(space, { path })
+          const resource = await (this.clientService.webdav as WebDAV).getFileInfo(space, { path })
           loadPreview({
+            clientService: this.clientService,
             resource,
             isPublic: false,
             dimensions: ImageDimension.Tile,
