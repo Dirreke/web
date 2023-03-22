@@ -44,10 +44,10 @@ import { useSpaceActionsUploadImage } from '../../../composables/actions/spaces/
 import EditQuota from 'web-pkg/src/mixins/spaces/editQuota'
 import QuotaModal from 'web-pkg/src/components/Spaces/QuotaModal.vue'
 import ReadmeContentModal from 'web-pkg/src/components/Spaces/ReadmeContentModal.vue'
-import { thumbnailService } from '../../../services'
 import { computed, defineComponent, inject, ref, unref, VNodeRef } from 'vue'
 import { SpaceResource } from 'web-client'
 import { useCapabilitySpacesMaxQuota, useStore } from 'web-pkg/src/composables'
+import { useThumbnailService } from 'web-app-files/src/composables/thumbnailService'
 
 export default defineComponent({
   name: 'SpaceActions',
@@ -55,6 +55,7 @@ export default defineComponent({
   mixins: [Rename, Delete, EditDescription, EditReadmeContent, Disable, Restore, EditQuota],
   setup() {
     const store = useStore()
+    const thumbnailService = useThumbnailService()
     const resource = inject<SpaceResource>('resource')
     const actionOptions = computed(() => ({
       resources: [unref(resource)]
@@ -66,12 +67,17 @@ export default defineComponent({
       spaceImageInput
     })
 
+    const supportedSpaceImageMimeTypes = computed(() => {
+      return thumbnailService.getSupportedMimeTypes('image/').join(',')
+    })
+
     return {
       maxQuota: useCapabilitySpacesMaxQuota(),
       actionOptions,
       spaceImageInput,
       uploadImageActions,
-      uploadImageSpace
+      uploadImageSpace,
+      supportedSpaceImageMimeTypes
     }
   },
   computed: {
@@ -92,9 +98,6 @@ export default defineComponent({
     },
     quotaModalIsOpen() {
       return this.$data.$_editQuota_modalOpen
-    },
-    supportedSpaceImageMimeTypes() {
-      return thumbnailService.getSupportedMimeTypes('image/').join(',')
     }
   },
   methods: {

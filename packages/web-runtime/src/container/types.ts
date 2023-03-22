@@ -92,3 +92,13 @@ export interface RuntimeApi {
     components: Component[]
   ) => void
 }
+
+/** Defines the args of the ready-hook which is available for each app */
+export interface AppReadyHookArgs {
+  announceExtension: (extension: { [key: string]: unknown }) => void
+  globalProperties: Record<string, any>
+  router: Router
+  store: Store<unknown>
+  instance?: App
+  portal?: any
+}

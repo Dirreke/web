@@ -33,13 +33,16 @@ import ReadmeContentModal from 'web-pkg/src/components/Spaces/ReadmeContentModal
 import Delete from 'web-pkg/src/mixins/spaces/delete'
 import Rename from 'web-pkg/src/mixins/spaces/rename'
 import Restore from 'web-pkg/src/mixins/spaces/restore'
-import { useFileActionsShowDetails } from '../../composables/actions/files/useFileActionsShowDetails'
 import EditDescription from 'web-pkg/src/mixins/spaces/editDescription'
 import EditQuota from 'web-pkg/src/mixins/spaces/editQuota'
 import Disable from 'web-pkg/src/mixins/spaces/disable'
 import ShowMembers from 'web-pkg/src/mixins/spaces/showMembers'
-import { useSpaceActionsUploadImage } from '../../composables/actions/spaces/useSpaceActionsUploadImage'
 import EditReadmeContent from 'web-pkg/src/mixins/spaces/editReadmeContent'
+import {
+  useThumbnailService,
+  useFileActionsShowDetails,
+  useSpaceActionsUploadImage
+} from '../../composables'
 import { isLocationSpacesActive } from '../../router'
 import {
   computed,
@@ -52,7 +55,6 @@ import {
   unref,
   VNodeRef
 } from 'vue'
-import { thumbnailService } from 'web-app-files/src/services'
 import { useCapabilitySpacesMaxQuota, useRouter, useStore } from 'web-pkg/src/composables'
 import { FileActionOptions, SpaceActionOptions } from 'web-pkg/src/composables/actions'
 
@@ -80,6 +82,7 @@ export default defineComponent({
     const instance = getCurrentInstance().proxy as any
     const router = useRouter()
     const store = useStore()
+    const thumbnailService = useThumbnailService()
 
     const actionOptions = toRef(props, 'actionOptions') as Ref<SpaceActionOptions>
 
@@ -158,13 +161,18 @@ export default defineComponent({
       return sections
     })
 
+    const supportedSpaceImageMimeTypes = computed(() => {
+      return thumbnailService.getSupportedMimeTypes('image/').join(',')
+    })
+
     return {
       _actionOptions: actionOptions,
       menuSections,
       maxQuota: useCapabilitySpacesMaxQuota(),
       spaceImageInput,
       uploadImageActions,
-      uploadImageSpace
+      uploadImageSpace,
+      supportedSpaceImageMimeTypes
     }
   },
   computed: {
@@ -176,9 +184,6 @@ export default defineComponent({
     },
     readmeContentModalIsOpen() {
       return this.$data.$_editReadmeContent_modalOpen
-    },
-    supportedSpaceImageMimeTypes() {
-      return thumbnailService.getSupportedMimeTypes('image/').join(',')
     }
   },
   methods: {
