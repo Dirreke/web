@@ -48,23 +48,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
-import { clientService } from 'web-pkg/src/services'
+import { defineComponent, PropType } from 'vue'
 import { configurationManager } from 'web-pkg/src/configuration'
-import { mapGetters } from 'vuex'
 import { urlJoin } from 'web-client/src/utils'
 
 export default defineComponent({
   props: {
     applicationsList: {
-      type: Array,
+      type: Array as PropType<any[]>,
       required: false,
       default: () => []
     }
   },
   computed: {
-    ...mapGetters('runtime/auth', ['accessToken']),
-
     applicationSwitcherLabel() {
       return this.$gettext('Application Switcher')
     }
@@ -84,8 +80,7 @@ export default defineComponent({
     },
     setClassicUIDefault() {
       const url = urlJoin(configurationManager.serverUrl, '/index.php/apps/web/settings/default')
-      const httpClient = clientService.httpAuthenticated(this.accessToken)
-      return httpClient.post(url, { isDefault: false })
+      return this.$clientService.httpAuthenticated.post(url, { isDefault: false })
     }
   }
 })

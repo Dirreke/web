@@ -1,9 +1,10 @@
 import { mapActions } from 'vuex'
-import { clientService, configurationManager, eventBus } from 'web-pkg'
+import { eventBus } from 'web-pkg'
+import { UserAction } from 'web-pkg/src/composables/actions'
 
 export default {
   computed: {
-    $_delete_items() {
+    $_delete_items(): UserAction[] {
       return [
         {
           name: 'delete',
@@ -56,11 +57,7 @@ export default {
     },
 
     async $_delete_deleteUsers(users) {
-      const accessToken = this.$store.getters['runtime/auth/accessToken']
-      const graphClient = clientService.graphAuthenticated(
-        configurationManager.serverUrl,
-        accessToken
-      )
+      const graphClient = this.$clientService.graphAuthenticated
       const promises = users.map((user) => graphClient.users.deleteUser(user.id))
 
       try {

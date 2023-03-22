@@ -2,7 +2,8 @@ import { Page } from 'playwright'
 import util from 'util'
 
 const userIdSelector = `[data-item-id="%s"] .users-table-btn-action-dropdown`
-const editActionBtn = `.oc-users-actions-edit-trigger`
+const editActionBtn = `.context-menu .oc-users-actions-edit-trigger`
+const deleteActionBtn = '.oc-users-actions-delete-trigger'
 const loginDropDown = '.vs__dropdown-menu'
 const dropdownOption = '.vs__dropdown-option'
 const loginInput = '#login-input'
@@ -20,9 +21,9 @@ const quotaValueDropDown = `.vs__dropdown-option :text-is("%s")`
 const userCheckboxSelector = `[data-item-id="%s"]:not(.oc-table-highlighted) input[type=checkbox]`
 const editQuotaBtn = '.oc-files-actions-edit-quota-trigger'
 const quotaInputBatchAction = '#quota-select-batch-action-form .vs__search'
-const confirmChangeQuotaSeveralSpacesBtn = '.oc-modal-body-actions-confirm'
 const userInput = '#%s-input'
 const roleValueDropDown = `.vs__dropdown-menu :text-is("%s")`
+const groupsInput = '#user-group-select-form .vs__search'
 
 export const changeAccountEnabled = async (args: {
   page: Page
@@ -30,10 +31,6 @@ export const changeAccountEnabled = async (args: {
   value: boolean
 }): Promise<void> => {
   const { page, value, uuid } = args
-  await page.locator(util.format(userIdSelector, uuid)).click()
-  await page.waitForSelector(editActionBtn)
-  await page.locator(`.context-menu`).locator(editActionBtn).click()
-
   await page.waitForSelector(loginInput)
   await page.locator(loginInput).click()
   await page.waitForSelector(loginDropDown)
@@ -60,8 +57,6 @@ export const changeQuota = async (args: {
   value: string
 }): Promise<void> => {
   const { page, value, uuid } = args
-  await page.locator(util.format(userIdSelector, uuid)).click()
-  await page.locator(`.context-menu`).locator(editActionBtn).click()
   await page.locator(quotaInput).fill(value)
   await page.locator(util.format(quotaValueDropDown, `${value} GB`)).click()
 
@@ -87,7 +82,7 @@ export const changeQuotaUsingBatchAction = async (args: {
 
   await Promise.all([
     page.waitForResponse((resp) => resp.status() === 200 && resp.request().method() === 'PATCH'),
-    page.locator(confirmChangeQuotaSeveralSpacesBtn).click()
+    page.locator(actionConfirmButton).click()
   ])
 }
 
@@ -125,7 +120,13 @@ export const addSelectedUsersToGroups = async (args: {
     await page.locator(groupsModalInput).click()
     await page.locator(dropdownOption).getByText(group).click()
   }
-  await page.locator(actionConfirmButton).click()
+  await Promise.all([
+    page.waitForResponse(
+      (resp) =>
+        resp.url().endsWith('/$ref') && resp.status() === 204 && resp.request().method() === 'POST'
+    ),
+    await page.locator(actionConfirmButton).click()
+  ])
 }
 
 export const removeSelectedUsersFromGroups = async (args: {
@@ -138,7 +139,15 @@ export const removeSelectedUsersFromGroups = async (args: {
     await page.locator(groupsModalInput).click()
     await page.locator(dropdownOption).getByText(group).click()
   }
-  await page.locator(actionConfirmButton).click()
+  await Promise.all([
+    page.waitForResponse(
+      (resp) =>
+        resp.url().endsWith('/$ref') &&
+        resp.status() === 204 &&
+        resp.request().method() === 'DELETE'
+    ),
+    await page.locator(actionConfirmButton).click()
+  ])
 }
 
 export const filterUsers = async (args: {
@@ -168,15 +177,11 @@ export const changeUser = async (args: {
   value: string
 }): Promise<void> => {
   const { page, attribute, value, uuid } = args
-  await page.locator(util.format(userIdSelector, uuid)).click()
-  await page.waitForSelector(editActionBtn)
-  await page.locator(`.context-menu`).locator(editActionBtn).click()
   await page.locator(util.format(userInput, attribute)).fill(value)
 
   if (attribute === 'role') {
     await page.locator(util.format(roleValueDropDown, value)).click()
   }
-
   await Promise.all([
     page.waitForResponse(
       (resp) =>
@@ -185,5 +190,82 @@ export const changeUser = async (args: {
         resp.request().method() === 'PATCH'
     ),
     await page.locator(compareDialogConfirm).click()
+  ])
+}
+
+export const addUserToGroups = async (args: { page: Page; groups: string[] }): Promise<void> => {
+  const { page, groups } = args
+  for (const group of groups) {
+    await page.locator(groupsInput).fill(group)
+    await page.keyboard.press('Enter')
+  }
+  await Promise.all([
+    page.waitForResponse(
+      (resp) =>
+        resp.url().endsWith('members/$ref') &&
+        resp.status() === 204 &&
+        resp.request().method() === 'POST'
+    ),
+    await page.locator(compareDialogConfirm).click()
+  ])
+}
+
+export const removeUserFromGroups = async (args: {
+  page: Page
+  uuid: string
+  groups: string[]
+}): Promise<void> => {
+  const { page, uuid, groups } = args
+  for (const group of groups) {
+    await page.getByTitle(group).click()
+  }
+  await Promise.all([
+    page.waitForResponse(
+      (resp) =>
+        resp.url().endsWith(encodeURIComponent(uuid) + '/$ref') &&
+        resp.status() === 204 &&
+        resp.request().method() === 'DELETE'
+    ),
+    await page.locator(compareDialogConfirm).click()
+  ])
+}
+
+export const openEditPanel = async (args: { page: Page; uuid: string }): Promise<void> => {
+  const { page, uuid } = args
+  await page.locator(util.format(userIdSelector, uuid)).click()
+  await page.locator(editActionBtn).click()
+}
+
+export const deleteUserUsingContextMenu = async (args: {
+  page: Page
+  uuid: string
+}): Promise<void> => {
+  const { page, uuid } = args
+  await page.locator(util.format(userIdSelector, uuid)).click()
+  await page.locator(`.context-menu`).locator(deleteActionBtn).click()
+
+  await Promise.all([
+    page.waitForResponse(
+      (resp) =>
+        resp.url().endsWith(encodeURIComponent(uuid)) &&
+        resp.status() === 204 &&
+        resp.request().method() === 'DELETE'
+    ),
+    await page.locator(actionConfirmButton).click()
+  ])
+}
+
+export const deleteUserUsingBatchAction = async (args: { page: Page }): Promise<void> => {
+  const { page } = args
+  await page.locator(deleteActionBtn).click()
+
+  await Promise.all([
+    page.waitForResponse(
+      (resp) =>
+        resp.url().includes('users') &&
+        resp.status() === 204 &&
+        resp.request().method() === 'DELETE'
+    ),
+    await page.locator(actionConfirmButton).click()
   ])
 }

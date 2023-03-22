@@ -39,11 +39,13 @@ Summary
 * Bugfix - Space image upload: [#8523](https://github.com/owncloud/web/issues/8523)
 * Bugfix - De-duplicate event handling to prevent errors on Draw-io: [#8576](https://github.com/owncloud/web/pull/8576)
 * Bugfix - Users without role assignment: [#8585](https://github.com/owncloud/web/issues/8585)
+* Bugfix - Password enforced check for public links: [#8587](https://github.com/owncloud/web/issues/8587)
 * Bugfix - Group members sorting: [#8592](https://github.com/owncloud/web/issues/8592)
 * Change - Streamline new tab handling in extensions: [#6661](https://github.com/owncloud/web/issues/6661)
 * Change - Update Vue to v3.2: [#7948](https://github.com/owncloud/web/issues/7948)
 * Change - Remove permission manager: [#8431](https://github.com/owncloud/web/pull/8431)
 * Change - Configurable extension autosave: [#8455](https://github.com/owncloud/web/pull/8455)
+* Enhancement - Global loading indicator: [#6183](https://github.com/owncloud/web/issues/6183)
 * Enhancement - Add tag support: [#7388](https://github.com/owncloud/web/pull/7388)
 * Enhancement - Improve performance when loading folders and share indicators: [#7721](https://github.com/owncloud/web/issues/7721)
 * Enhancement - Warn users when using unsupported browsers: [#7942](https://github.com/owncloud/web/pull/7942)
@@ -101,6 +103,7 @@ Summary
 * Enhancement - Public link permission `PublicLink.Write.all`: [#8541](https://github.com/owncloud/web/pull/8541)
 * Enhancement - Add and remove users from groups batch actions: [#8553](https://github.com/owncloud/web/pull/8553)
 * Enhancement - QuickActions role configurable: [#8566](https://github.com/owncloud/web/pull/8566)
+* Enhancement - Add `Accept-Language` header to all outgoing requests: [#8612](https://github.com/owncloud/web/issues/8612)
 
 Details
 -------
@@ -336,6 +339,15 @@ Details
    https://github.com/owncloud/web/issues/8585
    https://github.com/owncloud/web/pull/8590
 
+* Bugfix - Password enforced check for public links: [#8587](https://github.com/owncloud/web/issues/8587)
+
+   We've fixed a bug where we ignored the selected role in the password enforcement check. The web
+   ui was sending the request to update a link instead of showing a modal with a password input
+   prompt.
+
+   https://github.com/owncloud/web/issues/8587
+   https://github.com/owncloud/web/pull/8623
+
 * Bugfix - Group members sorting: [#8592](https://github.com/owncloud/web/issues/8592)
 
    Sorting groups by their member count has been fixed.
@@ -405,6 +417,14 @@ Details
    https://github.com/owncloud/web/pull/8455
    https://github.com/owncloud/web/pull/8457
    https://github.com/owncloud/web/pull/8474
+
+* Enhancement - Global loading indicator: [#6183](https://github.com/owncloud/web/issues/6183)
+
+   A global loading indicator for long running actions has been added to the top of the page.
+
+   https://github.com/owncloud/web/issues/6183
+   https://github.com/owncloud/web/issues/2134
+   https://github.com/owncloud/web/pull/8611
 
 * Enhancement - Add tag support: [#7388](https://github.com/owncloud/web/pull/7388)
 
@@ -805,6 +825,7 @@ Details
    https://github.com/owncloud/web/pull/8430
    https://github.com/owncloud/web/pull/8438
    https://github.com/owncloud/web/pull/8555
+   https://github.com/owncloud/web/pull/8603
 
 * Enhancement - Use standardized layout for file/space action list: [#8398](https://github.com/owncloud/web/pull/8398)
 
@@ -953,6 +974,14 @@ Details
 
    https://github.com/owncloud/web/issues/8547
    https://github.com/owncloud/web/pull/8566
+
+* Enhancement - Add `Accept-Language` header to all outgoing requests: [#8612](https://github.com/owncloud/web/issues/8612)
+
+   All outgoing requests now have the `Accept-Language` header which includes the current
+   user's language. It falls back to the browser language.
+
+   https://github.com/owncloud/web/issues/8612
+   https://github.com/owncloud/web/pull/8621
 
 Changelog for ownCloud Web [6.0.0] (2022-11-29)
 =======================================

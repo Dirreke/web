@@ -38,16 +38,7 @@ Then(
 )
 
 When(
-  /^"([^"]*)" updates the quota for space "([^"]*)" to "([^"]*)"$/,
-  async function (this: World, stepUser: string, key: string, value: string): Promise<void> {
-    const { page } = this.actorsEnvironment.getActor({ key: stepUser })
-    const spacesObject = new objects.applicationAdminSettings.Spaces({ page })
-    await spacesObject.changeQuota({ key, value })
-  }
-)
-
-When(
-  /^"([^"]*)" (disables|deletes) the space "([^"]*)" using the context-menu$/,
+  /^"([^"]*)" (disables|deletes|enables) the space "([^"]*)" using the context-menu$/,
   async function (this: World, stepUser: string, action: string, key: string): Promise<void> {
     const { page } = this.actorsEnvironment.getActor({ key: stepUser })
     const spacesObject = new objects.applicationAdminSettings.Spaces({ page })
@@ -59,6 +50,9 @@ When(
       case 'deletes':
         await spacesObject.delete({ key, context: 'context-menu' })
         break
+      case 'enables':
+        await spacesObject.enable({ key, context: 'context-menu' })
+        break
       default:
         throw new Error(`${action} not implemented`)
     }
@@ -66,12 +60,61 @@ When(
 )
 
 When(
-  /^"([^"]*)" (disables|deletes) the following space(s)? using the batch-actions$/,
+  /^"([^"]*)" (changes|updates) the space "([^"]*)" (name|subtitle|quota) to "([^"]*)" using the context-menu$/,
+  async function (
+    this: World,
+    stepUser: string,
+    _: string,
+    key: string,
+    action: string,
+    value: string
+  ): Promise<void> {
+    const { page } = this.actorsEnvironment.getActor({ key: stepUser })
+    const spacesObject = new objects.applicationAdminSettings.Spaces({ page })
+
+    switch (action) {
+      case 'name':
+        await spacesObject.rename({ key, value })
+        break
+      case 'subtitle':
+        await spacesObject.changeSubtitle({ key, value })
+        break
+      case 'quota':
+        await spacesObject.changeQuota({ key, value, context: 'context-menu' })
+        break
+      default:
+        throw new Error(`'${action}' not implemented`)
+    }
+  }
+)
+
+When(
+  /^"([^"]*)" (?:changes|updates) quota of the following space(?:s)? to "([^"]*)" using the batch-actions$/,
+  async function (
+    this: World,
+    stepUser: string,
+    value: string,
+    stepTable: DataTable
+  ): Promise<void> {
+    const { page } = this.actorsEnvironment.getActor({ key: stepUser })
+    const spacesObject = new objects.applicationAdminSettings.Spaces({ page })
+    for (const info of stepTable.hashes()) {
+      await spacesObject.select({ key: info.id })
+    }
+    await spacesObject.changeQuota({
+      key: stepTable.hashes()[0].id,
+      value,
+      context: 'batch-actions'
+    })
+  }
+)
+
+When(
+  /^"([^"]*)" (disables|enables|deletes) the following space(?:s)? using the batch-actions$/,
   async function (
     this: World,
     stepUser: string,
     action: string,
-    _: string,
     stepTable: DataTable
   ): Promise<void> {
     const { page } = this.actorsEnvironment.getActor({ key: stepUser })
@@ -86,8 +129,11 @@ When(
       case 'deletes':
         await spacesObject.delete({ key: stepTable.hashes()[0].id, context: 'batch-actions' })
         break
+      case 'enables':
+        await spacesObject.enable({ key: stepTable.hashes()[0].id, context: 'batch-actions' })
+        break
       default:
-        throw new Error(`${action} not implemented`)
+        throw new Error(`'${action}' not implemented`)
     }
   }
 )
@@ -149,7 +195,7 @@ Then(
 )
 
 When(
-  /^"([^"]*)" changes the quota of the user "([^"]*)" to "([^"]*)"$/,
+  /^"([^"]*)" changes the quota of the user "([^"]*)" to "([^"]*)" using the sidebar panel$/,
   async function (this: World, stepUser: string, key: string, value: string): Promise<void> {
     const { page } = this.actorsEnvironment.getActor({ key: stepUser })
     const usersObject = new objects.applicationAdminSettings.Users({ page })
@@ -158,7 +204,7 @@ When(
 )
 
 When(
-  /^"([^"]*)" changes the quota using a batch action to "([^"]*)" for users:$/,
+  /^"([^"]*)" changes the quota to "([^"]*)" for users using the batch action$/,
   async function (
     this: World,
     stepUser: string,
@@ -195,13 +241,13 @@ Then(
           expect(users).not.toContain(usersObject.getUUID({ key: user }))
           break
         default:
-          throw new Error(`${action} not implemented`)
+          throw new Error(`'${action}' not implemented`)
       }
     }
   }
 )
 
-Then(
+When(
   '{string} sets the following filter(s)',
   async function (this: World, stepUser: string, stepTable: DataTable): Promise<void> {
     const { page } = this.actorsEnvironment.getActor({ key: stepUser })
@@ -232,13 +278,13 @@ When(
 
     switch (action) {
       case 'adds':
-        await usersObject.addToGroups({ groups: groups.split(',') })
+        await usersObject.addToGroupsBatchAtion({ groups: groups.split(',') })
         break
       case 'removes':
-        await usersObject.removeFromGroups({ groups: groups.split(',') })
+        await usersObject.removeFromGroupsBatchAtion({ groups: groups.split(',') })
         break
       default:
-        throw new Error(`${action} not implemented`)
+        throw new Error(`'${action}' not implemented`)
     }
   }
 )
@@ -272,5 +318,117 @@ When(
       })
     }
     await usersObject.changeUser({ key: user, attribute: attribute, value: value })
+  }
+)
+
+When(
+  /^"([^"]*)" (adds|removes) the user "([^"]*)" (to|from) the (group|groups) "([^"]*)" using the sidebar panel$/,
+  async function (
+    this: World,
+    stepUser: string,
+    action: string,
+    user: string,
+    _: string,
+    __: string,
+    groups: string
+  ): Promise<void> {
+    const { page } = this.actorsEnvironment.getActor({ key: stepUser })
+    const usersObject = new objects.applicationAdminSettings.Users({ page })
+    switch (action) {
+      case 'adds':
+        await usersObject.addToGroups({ key: user, groups: groups.split(',') })
+        break
+      case 'removes':
+        await usersObject.removeFromGroups({ key: user, groups: groups.split(',') })
+        break
+      default:
+        throw new Error(`'${action}' not implemented`)
+    }
+  }
+)
+
+When(
+  /^"([^"]*)" deletes the following (?:user|users) using the (batch actions|context menu)$/,
+  async function (
+    this: World,
+    stepUser: string,
+    actionType: string,
+    stepTable: DataTable
+  ): Promise<void> {
+    const { page } = this.actorsEnvironment.getActor({ key: stepUser })
+    const usersObject = new objects.applicationAdminSettings.Users({ page })
+
+    switch (actionType) {
+      case 'batch actions':
+        for (const user of stepTable.hashes()) {
+          await usersObject.selectUser({ key: user.id })
+        }
+        await usersObject.deleteUserUsingBatchAction()
+        break
+      case 'context menu':
+        for (const { user } of stepTable.hashes()) {
+          await usersObject.deleteUserUsingContextMenu({ key: user })
+        }
+        break
+      default:
+        throw new Error(`'${actionType}' not implemented`)
+    }
+  }
+)
+
+When(
+  '{string} navigates to the groups management page',
+  async function (this: World, stepUser: string): Promise<void> {
+    const { page } = this.actorsEnvironment.getActor({ key: stepUser })
+    const groupsObject = new objects.applicationAdminSettings.page.Groups({ page })
+    await groupsObject.navigate()
+  }
+)
+
+When(
+  '{string} creates the following group(s)',
+  async function (this: World, stepUser: string, stepTable: DataTable): Promise<void> {
+    const { page } = this.actorsEnvironment.getActor({ key: stepUser })
+    const groupsObject = new objects.applicationAdminSettings.Groups({ page })
+
+    for (const info of stepTable.hashes()) {
+      const group = this.usersEnvironment.getGroup({ key: info.id })
+      await api.graph.deleteGroup({
+        group: group,
+        admin: this.usersEnvironment.getUser({ key: stepUser })
+      })
+    }
+    await page.reload()
+    for (const info of stepTable.hashes()) {
+      const group = this.usersEnvironment.getGroup({ key: info.id })
+      group.uuid = await groupsObject.createGroup({ key: group.displayName })
+    }
+  }
+)
+
+Then(
+  /^"([^"]*)" (should see|should not see) the following group(?:s)?$/,
+  async function (
+    this: World,
+    stepUser: string,
+    action: string,
+    stepTable: DataTable
+  ): Promise<void> {
+    const { page } = this.actorsEnvironment.getActor({ key: stepUser })
+    const groupsObject = new objects.applicationAdminSettings.Groups({ page })
+    const groups = await groupsObject.getDisplayedGroups()
+
+    for (const { group } of stepTable.hashes()) {
+      switch (action) {
+        case 'should see':
+          expect(groups).toContain(groupsObject.getUUID({ key: group }))
+          break
+        case 'should not see':
+          expect(groups).not.toContain(groupsObject.getUUID({ key: group }))
+          break
+        default:
+          throw new Error(`${action} not implemented`)
+      }
+    }
   }
 )

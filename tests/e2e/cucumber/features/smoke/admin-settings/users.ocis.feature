@@ -1,4 +1,4 @@
-Feature: spaces management
+Feature: users management
 
   Scenario: user login can be managed in the admin settings
     Given "Admin" creates following users
@@ -29,9 +29,9 @@ Feature: spaces management
     And "Admin" logs in
     And "Admin" opens the "admin-settings" app
     And "Admin" navigates to the users management page
-    When "Admin" changes the quota of the user "Alice" to "500"
+    When "Admin" changes the quota of the user "Alice" to "500" using the sidebar panel
     Then "Alice" should have quota "500"
-    When "Admin" changes the quota using a batch action to "20" for users:
+    When "Admin" changes the quota to "20" for users using the batch action
       | id    |
       | Alice |
       | Brian |
@@ -48,7 +48,7 @@ Feature: spaces management
       | Alice |
       | Brian |
       | Carol |
-    And "Admin" creates following groups
+    And "Admin" creates following groups using API
       | id      |
       | sales   |
       | finance |
@@ -76,7 +76,7 @@ Feature: spaces management
     Then "Admin" should see the following users
       | user  |
       | Carol |
-    Then "Admin" should not see the following users
+    And "Admin" should not see the following users
       | user  |
       | Alice |
       | Brian |
@@ -102,3 +102,53 @@ Feature: spaces management
       | username    | anna             |
       | displayname | Anna Murphy      |
       | email       | anna@example.org |
+    And "anna" logs out
+
+
+  Scenario: assign user to groups
+    Given "Admin" creates following users
+      | id    |
+      | Alice |
+    And "Admin" creates following groups using API
+      | id       |
+      | sales    |
+      | finance  |
+      | security |
+    And "Admin" adds user to the group using API
+      | user  | group |
+      | Alice | sales |
+    When "Admin" logs in
+    And "Admin" opens the "admin-settings" app
+    And "Admin" navigates to the users management page
+    When "Admin" adds the user "Alice" to the groups "finance,security" using the sidebar panel
+    And "Admin" removes the user "Alice" from the group "sales" using the sidebar panel
+    And "Admin" logs out
+    When "Alice" logs in
+    Then "Alice" should have self info:
+      | key    | value                                   |
+      | groups | finance department, security department |
+    And "Alice" logs out
+    
+    
+  Scenario: delete user
+    Given "Admin" creates following users
+      | id    |
+      | Alice |
+      | Brian |
+      | Carol |
+    And "Admin" logs in
+    And "Admin" opens the "admin-settings" app
+    And "Admin" navigates to the users management page
+    When "Admin" deletes the following users using the batch actions
+      | id    |
+      | Alice |
+      | Brian |
+    And "Admin" deletes the following user using the context menu
+      | user  |
+      | Carol |
+    Then "Admin" should not see the following users
+      | user  |
+      | Alice |
+      | Brian |
+      | Carol |
+    And "Admin" logs out

@@ -2,7 +2,6 @@ import CreateAndUpload from 'web-app-files/src/components/AppBar/CreateAndUpload
 import { mock, mockDeep } from 'jest-mock-extended'
 import { Resource, SpaceResource } from 'web-client/src/helpers'
 import { UppyResource } from 'web-runtime/src/composables/upload'
-import { Graph } from 'web-client'
 import { Drive } from 'web-client/src/generated'
 import { eventBus, useRequest } from 'web-pkg'
 import {
@@ -140,9 +139,8 @@ describe('CreateAndUpload component', () => {
       const { driveType, updated } = data
       const { wrapper, mocks, storeOptions } = getWrapper()
       const file = mockDeep<UppyResource>({ meta: { driveType } })
-      const graphMock = mockDeep<Graph>()
+      const graphMock = mocks.$clientService.graphAuthenticated
       graphMock.drives.getDrive.mockResolvedValue(mockDeep<Drive>() as any)
-      mocks.$clientService.graphAuthenticated.mockImplementation(() => graphMock)
       await wrapper.vm.onUploadComplete({ successful: [file] })
       expect(
         storeOptions.modules.runtime.modules.spaces.mutations.UPDATE_SPACE_FIELD
@@ -156,9 +154,8 @@ describe('CreateAndUpload component', () => {
       const file = mockDeep<UppyResource>({
         meta: { driveType: 'project', spaceId: space.id, currentFolderId: itemId }
       })
-      const graphMock = mockDeep<Graph>()
+      const graphMock = mocks.$clientService.graphAuthenticated
       graphMock.drives.getDrive.mockResolvedValue(mockDeep<Drive>() as any)
-      mocks.$clientService.graphAuthenticated.mockImplementation(() => graphMock)
       await wrapper.vm.onUploadComplete({ successful: [file] })
       expect(eventSpy).toHaveBeenCalled()
     })
@@ -191,7 +188,7 @@ describe('CreateAndUpload component', () => {
         item: '/',
         newFileHandlers: fileHandlerMocks
       })
-      const openEditorSpy = jest.spyOn(wrapper.vm, '$_fileActions_openEditor').mockImplementation()
+      const openEditorSpy = jest.spyOn(wrapper.vm, 'openEditor').mockImplementation()
       mocks.$clientService.webdav.putFileContents.mockResolvedValue(mockDeep<Resource>())
       await wrapper.vm.addNewFile('New resource.txt')
       expect(openEditorSpy).toHaveBeenCalled()
@@ -226,7 +223,7 @@ describe('CreateAndUpload component', () => {
     it('triggers the default file action', async () => {
       const { wrapper, mocks } = getWrapper({ item: '/' })
       const defaultActionSpy = jest
-        .spyOn(wrapper.vm, '$_fileActions_triggerDefaultAction')
+        .spyOn(wrapper.vm, 'triggerDefaultAction')
         .mockImplementation(() => undefined)
       mocks.$clientService.webdav.getFileInfo.mockResolvedValue(mockDeep<Resource>())
       await wrapper.vm.addAppProviderFile('someFile.txt')

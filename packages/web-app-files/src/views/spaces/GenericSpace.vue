@@ -58,12 +58,12 @@
           :sort-dir="sortDir"
           :view-size="viewSize"
           @row-mounted="rowMounted"
-          @file-click="$_fileActions_triggerDefaultAction"
+          @file-click="triggerDefaultAction"
           @file-dropped="fileDropped"
           @sort="handleSort"
         >
           <template #contextMenuActions="{ resource }">
-            <context-actions :space="space" :items="[resource]" />
+            <context-actions :action-options="{ space, resources: [resource] }" />
           </template>
           <template #footer>
             <pagination :pages="paginationPages" :current-page="paginationPage" />
@@ -92,7 +92,7 @@
           :sort-dir="sortDir"
           :space="space"
           @file-dropped="fileDropped"
-          @file-click="$_fileActions_triggerDefaultAction"
+          @file-click="triggerDefaultAction"
           @row-mounted="rowMounted"
           @sort="handleSort"
         >
@@ -107,8 +107,7 @@
           <template #contextMenu="{ resource }">
             <context-actions
               v-if="isResourceInSelection(resource)"
-              :space="space"
-              :items="selectedResources"
+              :action-options="{ space, resources: selectedResources }"
             />
           </template>
           <template #footer>
@@ -129,17 +128,9 @@
 </template>
 
 <script lang="ts">
-import { debounce, omit } from 'lodash-es'
+import { debounce, omit, last } from 'lodash-es'
 import { basename } from 'path'
-import {
-  computed,
-  defineComponent,
-  getCurrentInstance,
-  PropType,
-  onBeforeUnmount,
-  onMounted,
-  unref
-} from 'vue'
+import { computed, defineComponent, PropType, onBeforeUnmount, onMounted, unref } from 'vue'
 import { RouteLocationNamedRaw } from 'vue-router'
 import { mapGetters, mapState, mapActions, mapMutations, useStore } from 'vuex'
 import { useGettext } from 'vue3-gettext'
@@ -152,8 +143,7 @@ import {
   SpaceResource
 } from 'web-client/src/helpers'
 
-import MixinAccessibleBreadcrumb from '../../mixins/accessibleBreadcrumb'
-import MixinFileActions from '../../mixins/fileActions'
+import { useFileActions } from '../../composables/actions/files/useFileActions'
 
 import AppBar from '../../components/AppBar/AppBar.vue'
 import ContextActions from '../../components/FilesList/ContextActions.vue'
@@ -176,12 +166,13 @@ import { ImageType } from 'web-pkg/src/constants'
 import { VisibilityObserver } from 'web-pkg/src/observer'
 import { createFileRouteOptions } from 'web-pkg/src/helpers/router'
 import { eventBus } from 'web-pkg/src/services/eventBus'
-import { BreadcrumbItem, breadcrumbsFromPath, concatBreadcrumbs } from '../../helpers/breadcrumbs'
+import { breadcrumbsFromPath, concatBreadcrumbs } from '../../helpers/breadcrumbs'
 import { createLocationPublic, createLocationSpaces } from '../../router'
 import { useResourcesViewDefaults, ViewModeConstants } from '../../composables'
 import { ResourceTransfer, TransferType } from '../../helpers/resource'
 import { FolderLoaderOptions } from '../../services/folder'
 import { CreateTargetRouteOptions } from 'web-app-files/src/helpers/folderLink/types'
+import { BreadcrumbItem } from 'design-system/src/components/OcBreadcrumb/types'
 
 const visibilityObserver = new VisibilityObserver()
 
@@ -205,9 +196,6 @@ export default defineComponent({
     SideBar,
     SpaceHeader
   },
-
-  mixins: [MixinAccessibleBreadcrumb, MixinFileActions],
-
   props: {
     space: {
       type: Object as PropType<SpaceResource>,
@@ -227,8 +215,8 @@ export default defineComponent({
   },
 
   setup(props) {
-    const instance = getCurrentInstance().proxy as any
     const store = useStore()
+    const { $gettext, $ngettext, interpolate: $gettextInterpolate } = useGettext()
     let loadResourcesEventToken
 
     const viewModes = computed(() => [
@@ -263,7 +251,6 @@ export default defineComponent({
     })
     useDocumentTitle({ titleSegments })
 
-    const { $gettext } = useGettext()
     const route = useRoute()
     const breadcrumbs = computed(() => {
       const space = props.space
@@ -333,6 +320,43 @@ export default defineComponent({
       )
     })
 
+    const focusAndAnnounceBreadcrumb = (sameRoute) => {
+      const breadcrumbEl = document.getElementById('files-breadcrumb')
+      if (!breadcrumbEl) {
+        return
+      }
+      const activeBreadcrumb = last(breadcrumbEl.children[0].children)
+      const activeBreadcrumbItem = activeBreadcrumb.getElementsByTagName('button')[0]
+      if (!activeBreadcrumbItem) {
+        return
+      }
+
+      const totalFilesCount = store.getters['Files/totalFilesCount']
+      const itemCount = totalFilesCount.files + totalFilesCount.folders
+
+      const announcement = $gettextInterpolate(
+        $ngettext(
+          'This folder contains %{ amount } item.',
+          'This folder contains %{ amount } items.',
+          itemCount
+        ),
+        { amount: itemCount }
+      )
+
+      const translatedHint = itemCount > 0 ? announcement : $gettext('This folder has no content.')
+
+      document.querySelectorAll('.oc-breadcrumb-sr').forEach((el) => el.remove())
+
+      const invisibleHint = document.createElement('p')
+      invisibleHint.className = 'oc-invisible-sr oc-breadcrumb-sr'
+      invisibleHint.innerHTML = translatedHint
+
+      activeBreadcrumb.append(invisibleHint)
+      if (sameRoute) {
+        activeBreadcrumbItem.focus()
+      }
+    }
+
     const resourcesViewDefaults = useResourcesViewDefaults<Resource, any, any[]>()
     const performLoaderTask = async (
       sameRoute: boolean,
@@ -356,7 +380,7 @@ export default defineComponent({
         ...unref(resourcesViewDefaults.paginatedResources)
       ])
       resourcesViewDefaults.refreshFileListHeaderPosition()
-      instance.accessibleBreadcrumb_focusAndAnnounceBreadcrumb(sameRoute)
+      focusAndAnnounceBreadcrumb(sameRoute)
     }
 
     onMounted(() => {
@@ -375,6 +399,7 @@ export default defineComponent({
     })
 
     return {
+      ...useFileActions(),
       ...resourcesViewDefaults,
       breadcrumbs,
       hasSpaceHeader,
@@ -424,11 +449,7 @@ export default defineComponent({
   methods: {
     ...mapActions('Files', ['loadPreview']),
     ...mapActions(['showMessage', 'createModal', 'hideModal']),
-    ...mapMutations('Files', [
-      'REMOVE_FILES',
-      'REMOVE_FILES_FROM_SEARCHED',
-      'REMOVE_FILE_SELECTION'
-    ]),
+    ...mapMutations('Files', ['REMOVE_FILES', 'REMOVE_FILES_FROM_SEARCHED', 'RESET_SELECTION']),
 
     async fileDropped(fileIdTarget) {
       const selected = [...this.selectedResources]
@@ -440,12 +461,14 @@ export default defineComponent({
       if (targetFolder.type !== 'folder') {
         return
       }
+
       const copyMove = new ResourceTransfer(
         this.space,
         selected,
         this.space,
         targetFolder,
         this.$clientService,
+        this.$loadingService,
         this.createModal,
         this.hideModal,
         this.showMessage,
@@ -454,11 +477,9 @@ export default defineComponent({
         this.$gettextInterpolate
       )
       const movedResources = await copyMove.perform(TransferType.MOVE)
-      for (const resource of movedResources) {
-        this.REMOVE_FILES([resource])
-        this.REMOVE_FILES_FROM_SEARCHED([resource])
-        this.REMOVE_FILE_SELECTION(resource)
-      }
+      this.REMOVE_FILES(movedResources)
+      this.REMOVE_FILES_FROM_SEARCHED(movedResources)
+      this.RESET_SELECTION()
     },
 
     rowMounted(resource, component, dimensions) {
@@ -469,6 +490,7 @@ export default defineComponent({
       const debounced = debounce(({ unobserve }) => {
         unobserve()
         this.loadPreview({
+          clientService: this.$clientService,
           resource,
           isPublic: isPublicSpaceResource(this.space),
           dimensions,

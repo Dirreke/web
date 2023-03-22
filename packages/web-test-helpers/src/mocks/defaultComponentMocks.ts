@@ -1,12 +1,12 @@
-import { mockDeep } from 'jest-mock-extended'
-import { ClientService } from 'web-pkg/src/services'
-import { Router, RouteLocationNormalizedLoaded, RouteLocationRaw, RouteLocation } from 'vue-router'
+import { mock, mockDeep } from 'jest-mock-extended'
+import { ClientService, LoadingService, LoadingTaskCallbackArguments } from 'web-pkg/src/services'
+import { Router, RouteLocationNormalizedLoaded, RouteLocationRaw } from 'vue-router'
 import { UppyService } from 'web-runtime/src/services/uppyService'
 import { OwnCloudSdk } from 'web-client/src/types'
 import { ref } from 'vue'
 
 export interface ComponentMocksOptions {
-  currentRoute?: RouteLocation
+  currentRoute?: RouteLocationNormalizedLoaded
 }
 
 export const defaultComponentMocks = ({ currentRoute = undefined }: ComponentMocksOptions = {}) => {
@@ -14,14 +14,19 @@ export const defaultComponentMocks = ({ currentRoute = undefined }: ComponentMoc
   $router.resolve.mockImplementation(
     (to: RouteLocationRaw) => ({ href: (to as any).name, location: { path: '' } } as any)
   )
-  const $route = mockDeep<RouteLocationNormalizedLoaded>()
-  $route.path = currentRoute?.path || '/'
+  const $route = $router.currentRoute.value
+  $route.path = $route.path || '/'
 
   return {
     $router,
     $route,
     $clientService: mockDeep<ClientService>(),
     $client: mockDeep<OwnCloudSdk>(),
-    $uppyService: mockDeep<UppyService>()
+    $uppyService: mockDeep<UppyService>(),
+    $loadingService: mock<LoadingService>({
+      addTask: (callback) => {
+        return callback(mock<LoadingTaskCallbackArguments>())
+      }
+    })
   }
 }

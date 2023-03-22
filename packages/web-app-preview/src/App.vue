@@ -51,7 +51,7 @@
           v-else-if="activeMediaFileCached.isVideo"
           :key="`media-video-${activeMediaFileCached.id}`"
           controls
-          preload
+          preload="preload"
           :autoplay="isAutoPlayEnabled"
         >
           <source :src="activeMediaFileCached.url" :type="activeMediaFileCached.mimeType" />
@@ -60,7 +60,7 @@
           v-else-if="activeMediaFileCached.isAudio"
           :key="`media-audio-${activeMediaFileCached.id}`"
           controls
-          preload
+          preload="preload"
           :autoplay="isAutoPlayEnabled"
         >
           <source :src="activeMediaFileCached.url" :type="activeMediaFileCached.mimeType" />
@@ -190,6 +190,7 @@ import AppTopBar from 'web-pkg/src/components/AppTopBar.vue'
 import { loadPreview } from 'web-pkg/src/helpers'
 import { configurationManager } from 'web-pkg/src/configuration'
 import { createFileRouteOptions } from 'web-pkg/src/helpers/router'
+import { useDownloadFile } from 'web-pkg/src/composables/download/useDownloadFile'
 
 export const appId = 'preview'
 
@@ -237,6 +238,7 @@ export default defineComponent({
       ...useAppDefaults({
         applicationId: 'preview'
       }),
+      ...useDownloadFile(),
       accessToken: useAccessToken({ store }),
       isPublicLinkContext: usePublicLinkContext({ store }),
 
@@ -549,6 +551,7 @@ export default defineComponent({
     },
     loadPreview(file) {
       return loadPreview({
+        clientService: this.$clientService,
         resource: file,
         isPublic: this.isPublicLinkContext,
         server: configurationManager.serverUrl,

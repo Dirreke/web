@@ -29,15 +29,14 @@
           :is-selectable="false"
           :sort-by="sortBy"
           :sort-dir="sortDir"
-          @file-click="$_fileActions_triggerDefaultAction"
+          @file-click="triggerDefaultAction"
           @row-mounted="rowMounted"
           @sort="handleSort"
         >
           <template #contextMenu="{ resource }">
             <context-actions
               v-if="isResourceInSelection(resource)"
-              :items="selectedResources"
-              :space="getSpace(resource)"
+              :action-options="{ space: getSpace(resource), resources: selectedResources }"
             />
           </template>
           <template #footer>
@@ -80,7 +79,7 @@ import AppBar from '../AppBar/AppBar.vue'
 import { defineComponent, nextTick } from 'vue'
 import ListInfo from '../FilesList/ListInfo.vue'
 import Pagination from '../FilesList/Pagination.vue'
-import MixinFileActions from '../../mixins/fileActions'
+import { useFileActions } from '../../composables/actions/files/useFileActions'
 import { searchLimit } from '../../search/sdk/list'
 import { Resource } from 'web-client'
 import FilesViewWrapper from '../FilesViewWrapper.vue'
@@ -104,7 +103,6 @@ export default defineComponent({
     ResourceTable,
     FilesViewWrapper
   },
-  mixins: [MixinFileActions],
   props: {
     searchResult: {
       type: Object,
@@ -129,7 +127,9 @@ export default defineComponent({
       }
       return store.getters['runtime/spaces/spaces'].find((space) => space.id === resource.storageId)
     }
+
     return {
+      ...useFileActions({ store }),
       ...useResourcesViewDefaults<Resource, any, any[]>(),
       getSpace
     }
@@ -202,6 +202,7 @@ export default defineComponent({
       const debounced = debounce(({ unobserve }) => {
         unobserve()
         this.loadPreview({
+          clientService: this.$clientService,
           resource,
           isPublic: false,
           dimensions: ImageDimension.Thumbnail,

@@ -57,7 +57,7 @@
               </oc-button>
             </template>
             <template #contextMenuActions="{ resource }">
-              <space-context-actions :space="resource" :items="[resource]" />
+              <space-context-actions :action-options="{ resources: [resource] }" />
             </template>
           </resource-tiles>
         </div>
@@ -119,7 +119,7 @@ export default defineComponent({
       sortDir,
       items: spaces,
       handleSort
-    } = useSort({
+    } = useSort<SpaceResource>({
       items: runtimeSpaces,
       fields: sortFields
     })
@@ -214,6 +214,7 @@ export default defineComponent({
 
           const resource = await (this.$clientService.webdav as WebDAV).getFileInfo(space, { path })
           loadPreview({
+            clientService: this.$clientService,
             resource,
             isPublic: false,
             dimensions: ImageDimension.Tile,
