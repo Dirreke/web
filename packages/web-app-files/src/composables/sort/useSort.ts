@@ -65,6 +65,8 @@ export function useSort<T extends SortableItem>(options: SortOptions<T>): SortRe
   })
 
   const handleSort = ({ sortBy, sortDir }: { sortBy: string; sortDir: SortDir }) => {
+    // normally we would just set sortBy and sortDir here, but then the router could lose one of both changes.
+    // hence we update the router directly by setting both values as query.
     return router.replace({
       query: {
         ...unref(router.currentRoute).query,
