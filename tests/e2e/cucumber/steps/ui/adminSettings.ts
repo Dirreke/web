@@ -155,10 +155,10 @@ When(
 
     switch (action) {
       case 'allows':
-        await usersObject.allowLogin({ key })
+        await usersObject.allowLogin({ key, action: 'context-menu' })
         break
       case 'forbids':
-        await usersObject.forbidLogin({ key })
+        await usersObject.forbidLogin({ key, action: 'context-menu' })
         break
       default:
         throw new Error(`${action} not implemented`)
@@ -199,7 +199,7 @@ When(
   async function (this: World, stepUser: string, key: string, value: string): Promise<void> {
     const { page } = this.actorsEnvironment.getActor({ key: stepUser })
     const usersObject = new objects.applicationAdminSettings.Users({ page })
-    await usersObject.changeQuota({ key, value })
+    await usersObject.changeQuota({ key, value, action: 'context-menu' })
   }
 )
 
@@ -317,7 +317,12 @@ When(
         admin: this.usersEnvironment.getUser({ key: stepUser })
       })
     }
-    await usersObject.changeUser({ key: user, attribute: attribute, value: value })
+    await usersObject.changeUser({
+      key: user,
+      attribute: attribute,
+      value: value,
+      action: 'context-menu'
+    })
   }
 )
 
@@ -336,10 +341,18 @@ When(
     const usersObject = new objects.applicationAdminSettings.Users({ page })
     switch (action) {
       case 'adds':
-        await usersObject.addToGroups({ key: user, groups: groups.split(',') })
+        await usersObject.addToGroups({
+          key: user,
+          groups: groups.split(','),
+          action: 'context-menu'
+        })
         break
       case 'removes':
-        await usersObject.removeFromGroups({ key: user, groups: groups.split(',') })
+        await usersObject.removeFromGroups({
+          key: user,
+          groups: groups.split(','),
+          action: 'context-menu'
+        })
         break
       default:
         throw new Error(`'${action}' not implemented`)
@@ -432,3 +445,27 @@ Then(
     }
   }
 )
+
+When(
+  /^"([^"]*)" opens the edit panel of user "([^"]*)" using the (quick action|context menu)$/,
+  async function (this: World, stepUser: string, actionUser: string, action: string) {
+    const { page } = this.actorsEnvironment.getActor({ key: stepUser })
+    const usersObject = new objects.applicationAdminSettings.Users({ page })
+    switch (action) {
+      case 'quick action':
+        await usersObject.openEditPanel({ key: actionUser, action: 'quick-action' })
+        break
+      case 'context menu':
+        await usersObject.openEditPanel({ key: actionUser, action: 'context-menu' })
+        break
+      default:
+        throw new Error(`${action} not implemented`)
+    }
+  }
+)
+
+Then('{string} should see the edit panel', async function (this: World, stepUser: string) {
+  const { page } = this.actorsEnvironment.getActor({ key: stepUser })
+  const usersObject = new objects.applicationAdminSettings.Users({ page })
+  await usersObject.editPanelVisible()
+})

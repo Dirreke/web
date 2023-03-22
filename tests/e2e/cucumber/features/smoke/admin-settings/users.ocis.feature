@@ -128,8 +128,8 @@ Feature: users management
       | key    | value                                   |
       | groups | finance department, security department |
     And "Alice" logs out
-    
-    
+
+
   Scenario: delete user
     Given "Admin" creates following users
       | id    |
@@ -152,3 +152,18 @@ Feature: users management
       | Brian |
       | Carol |
     And "Admin" logs out
+
+
+  Scenario: edit panel can be opened via quick action and context menu
+    Given "Admin" creates following users
+      | id    |
+      | Alice |
+      | Brian |
+      | Carol |
+    And "Admin" logs in
+    And "Admin" opens the "admin-settings" app
+    And "Admin" navigates to the users management page
+    When "Admin" opens the edit panel of user "Brian" using the quick action
+    Then "Admin" should see the edit panel
+    When "Admin" opens the edit panel of user "Brian" using the context menu
+    Then "Admin" should see the edit panel
